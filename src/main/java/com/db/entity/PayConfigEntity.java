@@ -8,17 +8,17 @@ public class PayConfigEntity {
     /**
      * 公众账号ID
      */
-    public static String APP_ID = "wxe8849d77deee350c";
+    public static String APP_ID = "";
 
     /**
      * 商户号
      */
-    public static String MCH_ID = "1484062732";
+    public static String MCH_ID = "";
 
     /**
      * 商户秘钥
      */
-    public static String API_KEY = "U2017p0228m2017L0228k2017W0228BF";
+    public static String API_KEY = "";
 
     /**
      * 下单接口地址
