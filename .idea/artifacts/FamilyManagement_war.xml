@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="FamilyManagement:war">
+    <output-path>$PROJECT_DIR$/../bangon/zl/tfp/tfp/kbs88888/FamilyManagement/target</output-path>
+    <root id="archive" name="FamilyManagement.war">
+      <element id="artifact" artifact-name="FamilyManagement:war exploded" />
+    </root>
+  </artifact>
+</component>

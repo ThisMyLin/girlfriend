@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 扫描 排除@Controller修饰的类 -->
+    <context:component-scan base-package="com.db">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"></context:exclude-filter>
+    </context:component-scan>
+    <!-- 读取db文件 -->
+    <context:property-placeholder location="classpath:db.properties" file-encoding="UTF-8"></context:property-placeholder>
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!-- 基本信息 -->
+        <property name="jdbcUrl" value="${db.url}"></property>
+        <property name="driverClass" value="${db.driverClassName}"></property>
+        <property name="user" value="${db.userName}"></property>
+        <property name="password" value="${db.password}"></property>
+        <!-- 其他配置 -->
+        <property name="initialPoolSize" value="${db.initialPoolSize}"></property>
+        <property name="minPoolSize" value="${db.minPoolSize}"></property>
+        <property name="maxPoolSize" value="${db.maxPoolSize}"></property>
+        <property name="acquireIncrement" value="${db.acquireIncrement}"></property>
+        <property name="maxStatements" value="${db.maxStatements}"></property>
+        <property name="maxStatementsPerConnection" value="${db.maxStatementsPerConnection}"></property>
+        <property name="maxIdleTime" value="${db.maxIdleTime}"></property>
+    </bean>
+    <!-- 配置hibernate -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <!-- 注入数据源 -->
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 扫描实体类 -->
+        <property name="packagesToScan" value="com.db.entity"></property>
+        <property name="hibernateProperties">
+            <props>
+                <!--hibernate根据实体自动生成数据库表-->
+                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+                <!--指定数据库方言-->
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <!--在控制台显示执行的数据库操作语句-->
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <!--在控制台显示执行的数据哭操作语句（格式）-->
+                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- 配置reidis -->
+    <bean class="redis.clients.jedis.JedisPoolConfig" id="jedisPoolConfig">
+        <property name="maxTotal" value="${redis.maxTotal}"></property>
+        <property name="maxIdle" value="${redis.maxIdle}"></property>
+        <property name="maxWaitMillis" value="${redis.maxWaitMillis}"></property>
+        <property name="testOnBorrow" value="${redis.testOnBorrow}"></property>
+    </bean>
+    <bean class="redis.clients.jedis.JedisPool" id="jedisPool">
+        <constructor-arg index="0" ref="jedisPoolConfig"></constructor-arg>
+        <constructor-arg index="1" value="${redis.hostName}" type="java.lang.String"></constructor-arg>
+        <constructor-arg index="2" value="${redis.port}" type="int"></constructor-arg>
+    </bean>
+    <!-- 事物管理器配置  -->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+    <!-- 声明事务通知 -->
+    <tx:advice id="hibernateTransaction" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="*"></tx:method>
+        </tx:attributes>
+    </tx:advice>
+    <!-- 需要使用事务的方法 -->
+    <aop:config>
+        <aop:pointcut id="cutId" expression="execution(* com.db.service.*.*(..))"></aop:pointcut>
+        <aop:advisor advice-ref="hibernateTransaction" pointcut-ref="cutId"></aop:advisor>
+    </aop:config>
+</beans>

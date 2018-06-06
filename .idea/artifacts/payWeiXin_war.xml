@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="payWeiXin:war">
+    <output-path>$PROJECT_DIR$/../bangon/zl/payWeiXin/target</output-path>
+    <root id="archive" name="payWeiXin.war">
+      <element id="artifact" artifact-name="payWeiXin:war exploded" />
+    </root>
+  </artifact>
+</component>
